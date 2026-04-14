@@ -86,11 +86,13 @@ results$actual_subtype <- test_data$bag_label
 head(results[, c("actual_subtype", "predicted_subtype", "control", "NPM1", "PML_RARA")])
 
 # Accuracy
-mean(results$predicted_subtype == results$actual_subtype)
+cat("Accuracy: ", mean(results$predicted_subtype == results$actual_subtype), "\n\n")
 
 # Confusion matrix
+cat("Confusion Matrix: \n")
 conf_matrix <- table(Predicted = results$predicted_subtype, Actual = results$actual_subtype)
 print(conf_matrix)
 
 # Accuracy per class
-diag(conf_matrix) / colSums(conf_matrix)
+cat("\nAccuracy per class:\n")
+print(round(diag(conf_matrix) / colSums(conf_matrix), 4))
