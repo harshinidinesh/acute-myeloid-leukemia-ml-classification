@@ -1,5 +1,7 @@
 library(readxl)
 library(rsample)
+library(ggplot2)
+
 
 set.seed(123)
 
@@ -93,6 +95,45 @@ cat("Confusion Matrix: \n")
 conf_matrix <- table(Predicted = results$predicted_subtype, Actual = results$actual_subtype)
 print(conf_matrix)
 
+# Visual for CM
+cm_df <- as.data.frame(conf_matrix)
+names(cm_df) <- c("Predicted", "Actual", "Count")
+
+ggplot(cm_df, aes(x = Actual, y = Predicted, fill = Count)) +
+  geom_tile(color = "white", linewidth = 0.8) +
+  geom_text(aes(label = Count), size = 5, fontface = "bold",
+            color = ifelse(cm_df$Count > max(cm_df$Count) * 0.5, "white", "black")) +
+  scale_fill_gradient(low = "#E6F1FB", high = "#185FA5") +
+  labs(title = "Confusion Matrix", x = "Actual subtype", y = "Predicted subtype") +
+  theme_minimal(base_size = 13) +
+  theme(panel.grid = element_blank(),
+        axis.text.x = element_text(angle = 30, hjust = 1),
+        plot.title = element_text(face = "bold"))
+
 # Accuracy per class
 cat("\nAccuracy per class:\n")
-print(round(diag(conf_matrix) / colSums(conf_matrix), 4))
+
+class_acc <- diag(conf_matrix) / colSums(conf_matrix)
+print(round(class_acc, 4))
+
+acc_df <- data.frame(
+  Subtype  = names(class_acc),
+  Accuracy = as.numeric(class_acc)
+)
+
+print(ggplot(acc_df, aes(x = reorder(Subtype, Accuracy), y = Accuracy, fill = Subtype)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(Accuracy * 100, 1), "%")),
+            hjust = -0.15, size = 4) +
+  scale_y_continuous(labels = function(x) paste0(round(x * 100), "%"),
+                     limits = c(0, 1.15)) +
+  scale_fill_manual(values = c("CBFB_MYH11"    = "#8a4fb5",
+                               "control"       = "#3266ad",
+                               "NPM1"          = "#5b9e7a",
+                               "PML_RARA"      = "#c96e3f",
+                               "RUNX1_RUNX1T1" = "#c94f4f")) +
+  coord_flip() +
+  labs(title = "Per-Class Accuracy", x = NULL, y = "Accuracy") +
+  theme_minimal(base_size = 13) +
+  theme(panel.grid.major.y = element_blank(),
+        plot.title = element_text(face = "bold")))
