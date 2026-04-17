@@ -93,6 +93,26 @@ results$actual_subtype <- test_data$bag_label
 accuracy <- mean(results$predicted_subtype == results$actual_subtype)
 cat(sprintf("Overall Accuracy: %.2f%%\n", accuracy * 100))
 
+# Confusion Matrix & Visualization
+cat("\nConfusion Matrix:\n")
+conf_matrix <- table(Predicted = results$predicted_subtype, Actual = results$actual_subtype)
+print(conf_matrix)
+
+cm_df <- as.data.frame(conf_matrix)
+names(cm_df) <- c("Predicted", "Actual", "Count")
+
+print(ggplot(cm_df, aes(x = Actual, y = Predicted, fill = Count)) +
+        geom_tile(color = "white", linewidth = 0.8) +
+        geom_text(aes(label = Count), size = 5, fontface = "bold",
+                  color = ifelse(cm_df$Count > max(cm_df$Count) * 0.5, "white", "black")) +
+        scale_fill_gradient(low = "#E6F1FB", high = "#185FA5") +
+        labs(title = "Confusion Matrix: AML Subtype Prediction", 
+             x = "Actual Subtype", y = "Predicted Subtype") +
+        theme_minimal(base_size = 13) +
+        theme(panel.grid = element_blank(),
+              axis.text.x = element_text(angle = 30, hjust = 1),
+              plot.title = element_text(face = "bold")))
+
 # Class-Level Accuracy
 cat("\nAccuracy Per Class:\n")
 class_acc <- diag(conf_matrix) / colSums(conf_matrix)
@@ -115,26 +135,6 @@ print(ggplot(acc_df, aes(x = reorder(Subtype, Accuracy), y = Accuracy, fill = Su
         labs(title = "Classification Accuracy by Subtype", x = NULL, y = "Accuracy") +
         theme_minimal(base_size = 13) +
         theme(panel.grid.major.y = element_blank(),
-              plot.title = element_text(face = "bold")))
-
-# Confusion Matrix & Visualization
-cat("\nConfusion Matrix:\n")
-conf_matrix <- table(Predicted = results$predicted_subtype, Actual = results$actual_subtype)
-print(conf_matrix)
-
-cm_df <- as.data.frame(conf_matrix)
-names(cm_df) <- c("Predicted", "Actual", "Count")
-
-print(ggplot(cm_df, aes(x = Actual, y = Predicted, fill = Count)) +
-        geom_tile(color = "white", linewidth = 0.8) +
-        geom_text(aes(label = Count), size = 5, fontface = "bold",
-                  color = ifelse(cm_df$Count > max(cm_df$Count) * 0.5, "white", "black")) +
-        scale_fill_gradient(low = "#E6F1FB", high = "#185FA5") +
-        labs(title = "Confusion Matrix: AML Subtype Prediction", 
-             x = "Actual Subtype", y = "Predicted Subtype") +
-        theme_minimal(base_size = 13) +
-        theme(panel.grid = element_blank(),
-              axis.text.x = element_text(angle = 30, hjust = 1),
               plot.title = element_text(face = "bold")))
 
 # Mutual Information
